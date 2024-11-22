@@ -52,7 +52,7 @@ const App: React.FC = () => {
     setQuestion('');
 
     try {
-      const res = await axios.post('http://127.0.0.1:8000/ask_question', { question: currentQuestion });
+      const res = await axios.post('https://gravidai.onrender.com/ask_question', { question: currentQuestion });
       setResponse((prev) => {
         const updatedHistory = prev?.history
           ? prev.history.filter(entry => entry.ia !== '...')
