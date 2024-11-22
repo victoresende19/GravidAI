@@ -22,20 +22,42 @@ app.add_middleware(
 
 FOLDER_PATH = "./data/"
 
+@app.get("/")
+def gravidai():
+    """
+    Endpoint inicial para explicar sobre a API GravidAI.
+    """
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "message": """
+                O GravidAI é um assistente virtual criado para ajudar futuras mamães a tirarem dúvidas sobre gravidez de forma simples, confiável e acessível. Ele utiliza uma tecnologia avançada chamada RAG (Retrieval-Augmented Generation), que combina inteligência artificial com uma base de conhecimento médico especializado. Isso garante respostas precisas e sempre baseadas em fontes confiáveis.
+                Os arquivos utilizados em combinação com o méotodo RAG foram:
+                - Caderneta da Gestante -  ministério da saúde, 4º edição 2018: https://bvsms.saude.gov.br/bvs/publicacoes/caderneta_gestante_4ed.pdf
+                - Assistência Pré-natal Manual Técnico - Ministério da saúde: https://bvsms.saude.gov.br/bvs/publicacoes/cd04_11.pdf
+                - Cartilha da gestante - Fundação ABRINQ: https://www.fadc.org.br/sites/default/files/2022-05/Cartilha-da-gestante-Fundacao-Abrinq_0.pdf
+                - Criança feliz, manual de apoio visitas domiciliares às gestantes - Ministério da Cidadania: https://mds.gov.br/webarquivos/cidadania/SNAPI%20-%20Crian%C3%A7a%20Feliz/Manual%20da%20Gestante.pdf
+            """
+        }
+    )
+
 @app.get("/create_embeddings", response_model=EmbeddingResponse)
 def process_pdfs():
     """
     Endpoint para processar os PDFs de uma pasta, gerar os embeddings 
     e armazená-los no MongoDB Atlas.
     """
+
     if not os.path.exists(FOLDER_PATH):
         raise HTTPException(status_code=400, detail="Caminho da pasta não existe.")
 
     try:
         create_embedding_mongodb(FOLDER_PATH)
-        return {
-            "message": "Todos os PDFs foram processados e os embeddings foram armazenados no Cloud MongoDB Atlas."
-        }
+        return JSONResponse(
+            status_code=200,
+            content={"message": "Todos os PDFs foram processados e os embeddings foram armazenados no Cloud MongoDB Atlas."}
+        )
     except Exception as e:
         return JSONResponse(
             status_code=500,
@@ -48,6 +70,7 @@ async def ask_question_endpoint(query: QuestionRequest):
     Endpoint da API que processa uma pergunta do usuário, obtém a resposta através 
     de um modelo de linguagem, e retorna informações detalhadas sobre a execução.
     """
+    
     question = query.question
 
     try:
