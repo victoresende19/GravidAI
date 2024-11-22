@@ -168,14 +168,14 @@ const App: React.FC = () => {
             <p className="text-lg text-white mb-4 text-justify">
               O que o GravidAI faz?<br />
               <ul className="list-disc list-inside text-lg text-white mb-4">
-                <li>Responde suas dúvidas: Seja sobre alimentação, cuidados, exames ou sintomas, o GravidAI está aqui para te ajudar.</li>
+                <li>Responde suas dúvidas: Seja sobre alimentação, cuidados, exames ou sintomas de você e seu bebê. O GravidAI está aqui para te ajudar.</li>
                 <li>Oferece informações confiáveis: As respostas vêm de guias médicos e dados atualizados, feitos para te tranquilizar.</li>
                 <li>Está sempre disponível: 24 horas por dia, 7 dias por semana, pronto para ajudar quando você precisar.</li>
               </ul>
             </p>
             <p className="text-sm text-white justify-start">
               <br />
-              Nunca deixe de validar as informações com seu respectivo médico.
+              Nunca deixe de validar as informações com seu respectivo médico
             </p>
 
             {/* Chat */}

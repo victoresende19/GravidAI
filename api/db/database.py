@@ -30,7 +30,7 @@ def get_mongodb_collection():
     client = MongoClient(ATLAS_CONNECTION_STRING)
 
     db_name = "mongodb_pdf_content"
-    collection_name = "belly_budy_embeddings"
+    collection_name = "gravidai_embeddings"
     atlas_collection = client[db_name][collection_name]
 
     if atlas_collection.estimated_document_count() == 0:

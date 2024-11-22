@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bellybudy"
+name = "gravidai"
 version = "0.1.0"
 description = "Assistant for pregnant person"
 authors = ["Victor Resende <victoresende19@gmail.com>"]
