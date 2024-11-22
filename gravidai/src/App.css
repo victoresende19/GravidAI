@@ -1,0 +1,36 @@
+.custom-select {
+  display: block;
+  appearance: none;
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.5rem 1rem 0.5rem 0.5rem;
+  transition: border-color 0.3s ease-in-out;
+  outline: none;
+}
+
+.custom-select:hover {
+  border-color: #888;
+}
+
+.custom-select:focus {
+  border-color: #888;
+  background-color: #fff;
+}
+
+ul {
+  list-style: none; /* Remove default bullets */
+}
+
+ul li::before {
+  font-weight: bold; /* If you want it to be bold */
+  display: inline-block; /* Needed to add space between the bullet and the text */
+  width: 1em; /* Also needed for space (tweak if needed) */
+  margin-left: -1em; /* Also needed for space (tweak if needed) */
+}
+
+:root {
+  background: rgb(0,0,0);
+  background: linear-gradient(90deg, #5e4749 0%, #8E6A6D 38%, #FECCCB 100%);
+}
