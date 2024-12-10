@@ -1,6 +1,6 @@
 # GravidAI
 
-Sua plataforma definitiva para tirar dúvidas sobre a gravidez e a saúde do seu bebê! .
+Sua plataforma definitiva para tirar dúvidas sobre a gravidez e a saúde do seu bebê!
 
 ## Acesse 
 Para facilitar o teste do GravidAI, foi desenvolvido um website que realiza consultas à API criada. A API foi criada através das bibliotecas FastAPI, PyPDF2, LangChain e OpenAI, em linguagem Python, e é necessário obter uma API_KEY da OpenAI, a qual você pode criar gratuitamente, basta [clicar aqui](https://openai.com/index/openai-api/). Além disso, visando a acessibilidade, criou-se a plataforma SummsUpIA por meio do framework React, em linguagem JavaScript. 
