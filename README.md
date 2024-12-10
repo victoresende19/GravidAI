@@ -23,7 +23,6 @@ O agente foi criado a partir da técnica RAG (Retrieval-Augmented Generation), v
   - Poetry: pacote para o controle de versões das bibiliotecas.
 - MongoDB Atlas: utilizado para alocação e recuperação dos embeddings por meio da Vector Search e distância de cosseno.
 
-<hr>
 
 ## Conteúdos:
 Para a utilização da técnica RAG, utilizou-se os conteúdos abaixo visando dar um contexto melhor ao assistente. Assim, as respostas são cada vez mais personalizadas e assertivas:
@@ -34,10 +33,10 @@ Para a utilização da técnica RAG, utilizou-se os conteúdos abaixo visando da
 - [CADERNETA DA CRIANÇA MENINA - Ministério da Saúde, 7ª edição 2024](https://bvsms.saude.gov.br/bvs/publicacoes/caderneta_crianca_menina_passaporte_cidadania_7ed.pdf)
 - [CADERNETA DA CRIANÇA MENINO - Ministério da Saúde, 7ª edição 2024](https://bvsms.saude.gov.br/bvs/publicacoes/caderneta_crianca_menino_passaporte_cidadania_7ed.pdf)
 
-# API
+## API
 A API foi escrita em FastAPI através da lingugem Python e as devidas bibliotecas contidas no arquivo requirements.txt.
 
-## Configurações - localmente
+### Configurações - localmente
 Instalação da biblioteca Poetry:
 ```
 pip install poetry
@@ -69,7 +68,7 @@ Ativação da API:
 poetry run uvicorn main:app --reload
 ```
 
-## Endpoints
+### Endpoints
 Para executar a API localmente, os seguintes métodos estarão disponíveis. Utilize ferramentas como o Postman ou Insomnia para realizar as requisições:
 - Introdução à API com informações de documentos utilizados:
   - ``` (GET): http://127.0.0.1:8000/ ```
@@ -79,10 +78,10 @@ Para executar a API localmente, os seguintes métodos estarão disponíveis. Uti
   - ``` (POST):  http://127.0.0.1:8000/ask_question/ ```
   - Corpo da Requisição JSON: ```{ "question": "Quais alimentos não posso comer enquanto estou grávida?" }```
 
-# Frontend
+## Frontend
 O frontend foi escrito em React através da linguagem Typescript.
 
-## Configurações - localmente
+### Configurações - localmente
 Instalação das bibliotecas:
 ```
 npm install
