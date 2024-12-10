@@ -25,6 +25,14 @@ O agente foi criado a partir da técnica RAG (Retrieval-Augmented Generation), v
 
 <hr>
 
+## Conteúdos:
+Para a utilização da técnica RAG, utilizou-se os conteúdos abaixo visando dar um contexto melhor ao assistente. Assim, as respostas são cada vez mais personalizadas e assertivas:
+- [Caderneta da Gestante -  ministério da saúde, 4º edição 2018](https://bvsms.saude.gov.br/bvs/publicacoes/caderneta_gestante_4ed.pdf)
+- [Assistência Pré-natal Manual Técnico - Ministério da saúde](https://bvsms.saude.gov.br/bvs/publicacoes/cd04_11.pdf)
+- [Cartilha da gestante - Fundação ABRINQ](https://www.fadc.org.br/sites/default/files/2022-05/Cartilha-da-gestante-Fundacao-Abrinq_0.pdf)
+- [Criança feliz, manual de apoio visitas domiciliares às gestantes - Ministério da Cidadania](https://mds.gov.br/webarquivos/cidadania/SNAPI%20-%20Crian%C3%A7a%20Feliz/Manual%20da%20Gestante.pdf)
+- [CADERNETA DA CRIANÇA MENINA - Ministério da Saúde, 7ª edição 2024](https://bvsms.saude.gov.br/bvs/publicacoes/caderneta_crianca_menina_passaporte_cidadania_7ed.pdf)
+- [CADERNETA DA CRIANÇA MENINO - Ministério da Saúde, 7ª edição 2024](https://bvsms.saude.gov.br/bvs/publicacoes/caderneta_crianca_menino_passaporte_cidadania_7ed.pdf)
 
 # API
 A API foi escrita em FastAPI através da lingugem Python e as devidas bibliotecas contidas no arquivo requirements.txt.
