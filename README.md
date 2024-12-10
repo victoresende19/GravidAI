@@ -25,12 +25,11 @@ O agente foi criado a partir da técnica RAG (Retrieval-Augmented Generation), v
 
 <hr>
 
-# Teste a aplicação localmente
 
-## API
+# API
 A API foi escrita em FastAPI através da lingugem Python e as devidas bibliotecas contidas no arquivo requirements.txt.
 
-### Configurações - localmente
+## Configurações - localmente
 Instalação da biblioteca Poetry:
 ```
 pip install poetry
@@ -62,6 +61,7 @@ Ativação da API:
 poetry run uvicorn main:app --reload
 ```
 
+## Endpoints
 Para executar a API localmente, os seguintes métodos estarão disponíveis. Utilize ferramentas como o Postman ou Insomnia para realizar as requisições:
 - Introdução à API com informações de documentos utilizados:
   - ``` (GET): http://127.0.0.1:8000/ ```
@@ -71,10 +71,10 @@ Para executar a API localmente, os seguintes métodos estarão disponíveis. Uti
   - ``` (POST):  http://127.0.0.1:8000/ask_question/ ```
   - Corpo da Requisição JSON: ```{ "question": "Quais alimentos não posso comer enquanto estou grávida?" }```
 
-## Frontend
+# Frontend
 O frontend foi escrito em React através da linguagem Typescript.
 
-### Configurações - localmente
+## Configurações - localmente
 Instalação das bibliotecas:
 ```
 npm install
@@ -89,8 +89,6 @@ Ativação da interface:
 ```
 npm start
 ```
-
-<hr>
 
 <hr>
 @Victor Resende
