@@ -15,7 +15,7 @@ atlas_collection = get_mongodb_collection()
 # Coleção existente no MongoDB Atlas
 vector_store = MongoDBAtlasVectorSearch(
     collection=atlas_collection,
-    embedding=OpenAIEmbeddings(disallowed_special=()),
+    embedding=OpenAIEmbeddings(),
     index_name="vector_index"
 )
 
