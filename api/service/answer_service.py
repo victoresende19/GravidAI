@@ -5,7 +5,7 @@ from tiktoken import encoding_for_model
 from db.database import get_mongodb_collection
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
-from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import MongoDBAtlasVectorSearch
 from langchain_community.chat_models import ChatOpenAI
 from utils.format import format_docs, format_chat_history, format_source
