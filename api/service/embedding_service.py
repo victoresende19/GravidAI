@@ -79,7 +79,7 @@ def create_embedding_mongodb(folder_path: str):
 
     MongoDBAtlasVectorSearch.from_documents(
         documents=load_pdfs_from_folder(folder_path),
-        embedding=OpenAIEmbeddings(disallowed_special=()),
+        embedding=OpenAIEmbeddings(),
         collection=configure_mongodb(),
         index_name="vector_index"
     )
