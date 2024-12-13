@@ -9,13 +9,17 @@ from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import MongoDBAtlasVectorSearch
 from langchain_community.chat_models import ChatOpenAI
 from utils.format import format_docs, format_chat_history, format_source
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 atlas_collection = get_mongodb_collection()
 
 # Coleção existente no MongoDB Atlas
 vector_store = MongoDBAtlasVectorSearch(
     collection=atlas_collection,
-    embedding=OpenAIEmbeddings(),
+    embedding=OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY),
     index_name="vector_index"
 )
 

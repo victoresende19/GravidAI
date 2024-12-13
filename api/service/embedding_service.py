@@ -6,6 +6,11 @@ from langchain_community.vectorstores import MongoDBAtlasVectorSearch
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from db.database import configure_mongodb
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def load_pdfs_from_folder(folder_path):
     """
@@ -79,7 +84,7 @@ def create_embedding_mongodb(folder_path: str):
 
     MongoDBAtlasVectorSearch.from_documents(
         documents=load_pdfs_from_folder(folder_path),
-        embedding=OpenAIEmbeddings(),
+        embedding=OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY),
         collection=configure_mongodb(),
         index_name="vector_index"
     )
