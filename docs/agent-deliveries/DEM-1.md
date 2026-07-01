@@ -213,6 +213,221 @@ Este resultado usa como entrada o output aprovado da etapa anterior. Você pode 
 
 **Observação final:** Não foi possível mapear todo o fluxo de ingestão, nem confirmar mecanismos de autenticação, interface administrativa ou limites da operação. O refinamento aqui está limitado à informação recuperada e depende de análise direta dos scripts completos para fechamento de todo o ciclo de ingestão.
 
+## Development — versão 1
+
+## Primeira versão gerada automaticamente
+
+Este resultado usa como entrada o output aprovado da etapa anterior. Você pode aprová-lo diretamente ou usar o chat para solicitar ajustes.
+
+## Execução de desenvolvimento multiagente
+
+> As alterações abaixo já foram aplicadas em um clone isolado. Nenhum commit ou push
+> foi realizado. A aprovação humana publicará a branch e abrirá o Draft PR.
+
+### Roteamento
+
+- Agentes selecionados: **Python**
+- Motivo: inserção e validação da nova cartilha via pipeline Python existente (create_embedding_mongodb / endpoint /create_embeddings)
+- QA: obrigatório
+- Veredito do QA: **APROVADO_COM_RESSALVAS**
+
+### Tech Lead
+
+Entendimento técnico (resumo)
+- Objetivo: adicionar a cartilha PDF à base RAG do GravidAI, usando o pipeline existente que processa PDFs em ./data/, gera embeddings (OpenAI/LangChain) e persiste no MongoDB Atlas (coleção gravidai_embeddings / índice vector_index). Endpoint disponível: GET /create_embeddings que chama create_embedding_mongodb(FOLDER_PATH).
+
+Arquivos e símbolos relevantes (existentes)
+- api/main.py: endpoints — /create_embeddings -> process_pdfs(), /ask_question -> ask_question_endpoint()
+- api/service/embedding_service.py: load_pdfs_from_folder(folder_path), create_embedding_mongodb(folder_path)
+- api/service/answer_service.py: ask_question(question) — retriever setup, uso de MongoDBAtlasVectorSearch, format_docs/format_source
+- api/db/database.py: get_mongodb_collection(), configure_mongodb(), create_vector_search_index()
+- api/model/response.py: Source, QuestionResponse models (formato esperado)
+- api/utils/observability.py: log_observability(prompt, answer, tokens_used, response_time)
+- README.md: explica FOLDER_PATH = ./data/ e endpoints
+
+Plano de implementação (ordem executável)
+1. Preparação (manual): colocar o PDF da cartilha em ./data/ com nome claro (ex.: direitos_crianca_adolescente.pdf).
+2. Verificar .env: ATLAS_CONNECTION_STRING e OPENAI_API_KEY (e opcional LANGSMITH_API_KEY) configuradas.
+3. Local: rodar a API (poetry/uvicorn) ou executar diretamente a função create_embedding_mongodb apontando para ./data/ via endpoint GET /create_embeddings.
+4. Validar ingestão: checar logs do terminal e coleção MongoDB (documentos inseridos, presença do índice vector_index).
+5. Teste funcional: usar POST /ask_question com perguntas relacionadas ao conteúdo; confirmar que field "source" nas respostas referencia o novo PDF.
+6. Registrar procedimento e resultado (README ou docs/operacional).
+7. (Opcional) adicionar validação básica ao pipeline: checagem de extensão, tamanho e tratamento de exceções com logs mais verbosos.
+
+Estratégia de testes
+- Testes manuais:
+  - Confirmar que GET /create_embeddings retorna 200 e mensagem de sucesso.
+  - Verificar via MongoDB (client) que novos documentos (fragments) foram adicionados.
+  - Fazer POST /ask_question com perguntas-chave do PDF e validar "source" inclui o nome do arquivo e páginas.
+- Observabilidade:
+  - Conferir saída de print/logs e chamadas a log_observability (se LANGSMITH_API_KEY presente).
+- Não há testes automatizados existentes para ingestão; sugerir criar smoke test que chama /create_embeddings e valida coleção não vazia.
+
+Riscos e rollback
+- Riscos:
+  - Falha por falta de OPENAI_API_KEY ou ATLAS_CONNECTION_STRING -> pipeline lança erros.
+  - Duplicação de embeddings se rodar múltiplas vezes sem deduplicação.
+  - PDFs mal formatados podem gerar chunks inválidos.
+- Rollback:
+  - Antes de ingestão, fazer backup/inspeção: exportar documentos atuais da coleção (mongodump ou export).
+  - Em caso de ingestão indesejada, remover documentos inseridos pelo filename (campo source/path nos docs) ou restaurar backup.
+
+Dúvidas impeditivas (se não respondidas, marcar bloqueado)
+1. Há metadado persistido que identifica a origem (nome do arquivo/page) nos documentos gravados? (importante para rollback/consulta)
+2. Existe política de deduplicação/versão para reprocessamentos? Como evitar duplicatas?
+3. A conta MongoDB Atlas tem permissões e quota para novos embeddings?
+4. Deseja que eu implemente validação/checagem automática do PDF antes de ingestão e/ou idempotência no pipeline?
+
+Decisão de roteamento
+- Requer desenvolvimento Python (alterações mínimas: documentação e, opcionalmente, validação/idempotência). QA manual obrigatório para checagens em Mongo e respostas do assistente.
+
+ROUTING_JSON: {"required_agents":["python"],"reason":"inserção e validação da nova cartilha via pipeline Python existente (create_embedding_mongodb / endpoint /create_embeddings)","qa_required":true,"blocked":false}
+
+### Desenvolvedor Python
+
+Resumo rápido (ações e por que foram feitas)
+- Objetivo: adicionar suporte e validações ao pipeline de ingestão e facilitar inclusão da nova cartilha PDF.
+- Ações: melhorar robustez de api/service/embedding_service.py, criar scripts para baixar a cartilha e checar PDFs. Tentativa de download falhou por problema de verificação SSL no ambiente (detalhes abaixo).
+
+Arquivos alterados / criados
+- Modificado:
+  - api/service/embedding_service.py
+    - validações: verifica existência da pasta, ignora arquivos não-PDF, alerta para arquivos grandes.
+    - enriquece metadados de fragmentos (source_file, source_path).
+    - valida OPENAI_API_KEY e adiciona logs e tratamento de exceção.
+- Criado:
+  - scripts/download_cartilha.sh — script para baixar a cartilha para ./data/
+  - scripts/check_pdfs.py — script leve que lista e valida PDFs em ./data/
+
+Comportamento implementado
+- load_pdfs_from_folder:
+  -.raise ValueError se pasta não existe ou não contém PDFs.
+  -Adds metadata fields source_file and source_path to each fragment for rastreabilidade.
+  -Logs warnings for large files (>=10MB) and errors per-file without breaking entire run.
+- create_embedding_mongodb:
+  -Raises EnvironmentError if OPENAI_API_KEY não estiver configurada.
+  -Logs início/fim, chama configure_mongodb() (que cria o índice) e trata exceções com logger.exception.
+  -Does not change persistence schema; only improves validation and observability.
+
+Scripts e comandos executados (e resultados)
+1) Criação de diretórios:
+   - Command: mkdir -p scripts data
+   - Resultado: diretórios criados (ok).
+
+2) Edição/Criação de arquivos:
+   - Files edited/created as list acima (ok).
+
+3) Tentativa de download da cartilha:
+   - Command: scripts/download_cartilha.sh (usa curl -fSL)
+   - Resultado: falha com curl exit code 60 — SSL certificate problem: unable to get local issuer certificate.
+     - Nota: ambiente não pôde verificar a autoridade do certificado. Não alterei o script para forçar verificação por segurança.
+
+4) Checagem de ./data/:
+   - Command: ls -la ./data
+   - Resultado: pasta está vazia (nenhum PDF presente).
+
+Validações automáticas e limitações
+- Não foi possível baixar automaticamente o PDF devido a erro SSL do curl no ambiente (curl retornou código 60). Opções:
+  - Forçar download ignorando verificação SSL (curl -k) — inseguro; requer confirmação.
+  - Baixar manualmente o PDF e colocá-lo em ./data/ com nome: direitos_crianca_adolescente.pdf (recomendado).
+- Não executei create_embedding_mongodb nem rodei a API /create_embeddings:
+  - create_embedding_mongodb exige OPENAI_API_KEY e conexão ao MongoDB Atlas (ATLAS_CONNECTION_STRING). Essas variáveis e acesso não foram configuradas no ambiente — executar sem elas causará erros.
+- Não modifiquei o esquema de persistência nem fiz deduplicação automática (mudança potencialmente arriscada sem conhecer como os documentos são armazenados). Apenas adicionei metadados que permitem deduplicação/rollback futuros (source_file/source_path).
+
+Instruções recomendadas para próximo passo (manuais e reproduzíveis)
+1) Baixar a cartilha manualmente (ou permitir download inseguro):
+   - Manual: coloque o PDF em repository/data/ com o nome direitos_crianca_adolescente.pdf
+   - Ou, para forçar download (inseguro): scripts/download_cartilha.sh pode ser alterado para usar curl -k; ou executar:
+     curl -k -fSL \"https://www.defensoria.df.gov.br/wp-content/uploads/2023/01/Cartilha-Os-Direitos-da-Crianca-e-do-Adolescente.pdf\" -o data/direitos_crianca_adolescente.pdf
+
+2) Configurar variáveis de ambiente (ex.: em .env):
+   - OPENAI_API_KEY=...
+   - ATLAS_CONNECTION_STRING=...
+   - (opcional) LANGSMITH_API_KEY=...
+   - Observação: não colocar chaves no repositório.
+
+3) Rodar ingestão:
+   - Opção A (API endpoint): iniciar FastAPI (ex.: uvicorn api.main:app --reload) e chamar GET /create_embeddings
+   - Opção B (direto): abrir REPL Python e executar:
+       from api.service.embedding_service import create_embedding_mongodb
+       create_embedding_mongodb('./data/')
+     (requer as variáveis de ambiente setadas e dependências instaladas)
+
+4) Verificações pós-ingestão:
+   - Confirmar documentos inseridos na coleção mongodb_pdf_content.gravidai_embeddings e presença do índice vector_index.
+   - Fazer POST /ask_question com perguntas relacionadas e verificar campo "source" nas respostas.
+
+Observações finais e riscos remanescentes
+- Risco: duplicação se reprocessar o mesmo PDF; agora há metadados que permitem identificar documentos por source_file, mas deduplicação automática não foi implementada para evitar alterações perigosas sem teste.
+- Risco: se bibliotecas (langchain, langchain_community, etc.) não estiverem instaladas, create_embedding_mongodb falhará ao importar/instanciar embeddings. Verificar ambiente Python/Poetry conforme README.
+- Não foi feito commit; todas as alterações estão no working tree conforme solicitado (arquivos criados/alterados no repositório local).
+
+Se desejar, posso:
+- Retentar o download usando curl com --insecure (dev mode) e colocar o PDF em ./data/ (peça explícita necessária).
+- Implementar deduplicação segura baseada em source_file (recomendado: procurar por documentos existentes com o mesmo metadata antes de inserir).
+- Tentar rodar create_embedding_mongodb localmente se fornecer (ou configurar) variáveis OPENAI_API_KEY e ATLAS_CONNECTION_STRING no ambiente temporário.
+
+Quer que:
+- eu tente baixar com --insecure agora, ou
+- aguarde você colocar o PDF em ./data/ e eu executo a ingestão (se fornecer as chaves), ou
+- implemente deduplicação automática baseada em source_file antes de executar a ingestão?
+
+### QA
+
+Veredito: APROVADO_COM_RESSALVAS
+
+Testes/comandos executados:
+- ls -la (repositório)
+- python -m py_compile api/service/embedding_service.py scripts/check_pdfs.py (syntax OK)
+- python3 scripts/check_pdfs.py -> saiu "Nenhum PDF encontrado em ./data"
+- tentativa: importar/exec create_embedding_mongodb -> falha: ModuleNotFoundError: langchain_community
+
+Resultados observados:
+- Arquivo modificado: api/service/embedding_service.py — adiciona validações, logs e metadados (source_file, source_path) e valida OPENAI_API_KEY.
+- Arquivos criados: scripts/check_pdfs.py, scripts/download_cartilha.sh
+- check_pdfs detectou diretório data vazio.
+- Não foi possível executar a ingestão completa (create_embedding_mongodb) por dependências ausentes e variáveis de ambiente não configuradas.
+
+Problemas encontrados / notas:
+- Dependências necessárias (langchain_community, langchain_openai, pymongo, etc.) não instaladas — impede execução do pipeline.
+- OPENAI_API_KEY e ATLAS_CONNECTION_STRING não configuradas no ambiente — create_embedding_mongodb requer ambas.
+- Não há deduplicação: reprocessamentos podem gerar duplicatas (metadados agora permitem identificação para rollback/dedup).
+- scripts/download_cartilha.sh usa curl -fSL (seguro); em ambiente anterior o download falhou por verificação SSL do host externo (ambiente), não pelo script.
+
+Correções aplicadas:
+- Nenhuma alteração adicional além das já no working tree (nenhum commit realizado).
+
+Pendências recomendadas:
+1) Colocar o PDF em ./data/ (ex.: direitos_crianca_adolescente.pdf) or allow explicit --insecure download if accepted.
+2) Instalar dependências do projeto (poetry/pip) e exportar OPENAI_API_KEY e ATLAS_CONNECTION_STRING.
+3) Opcional: implementar deduplicação segura por metadata['source_file'] antes da persistência se evitar duplicatas for desejado.
+4) Após 1+2, executar endpoint GET /create_embeddings ou chamar create_embedding_mongodb('./data/') e validar coleção Mongo (documentos e índice vector_index) e POST /ask_question funcionalidade.
+
+Arquivos alterados/criados:
+- Modified: api/service/embedding_service.py
+- Added: scripts/check_pdfs.py, scripts/download_cartilha.sh
+
+Nenhuma correção de código foi necessária além do que já está no working tree. Execução completa do pipeline não pôde ser verificada por limitações de ambiente (dependências e variáveis).
+
+QA_VERDICT: APROVADO_COM_RESSALVAS
+
+### Arquivos alterados
+
+- `api/service/embedding_service.py`
+- `scripts/`
+
+### Resumo do diff
+
+```text
+api/service/embedding_service.py | 118 ++++++++++++++++++++++++---------------
+ 1 file changed, 74 insertions(+), 44 deletions(-)
+scripts/ | novo arquivo
+```
+
+### Branch preparada
+
+`ai/dem-1-nova-cartilha`
+
 ## Relatório da execução Tech Lead → Desenvolvedor(es) → QA
 
 ## Primeira versão gerada automaticamente
